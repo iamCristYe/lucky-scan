@@ -12,3 +12,7 @@
 -dontwarn com.google.mlkit.vision.text.japanese.**
 -dontwarn com.google.mlkit.vision.text.korean.**
 -keep class com.google.mlkit.vision.text.latin.** { *; }
+
+# Google Play Services (Deferred Components)
+-dontwarn com.google.android.play.core.**
+-dontwarn io.flutter.embedding.engine.deferredcomponents.**
