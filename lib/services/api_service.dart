@@ -21,7 +21,7 @@ class ApiService {
     "sec-fetch-dest": "empty",
     "sec-fetch-mode": "cors",
     "sec-fetch-site": "same-site",
-    // User agent should ideally match the WebView's or a standard Android one
+    // User agent matches the one in the request, but platform is Android
     "user-agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36",
   };
 
