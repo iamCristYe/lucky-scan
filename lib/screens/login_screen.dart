@@ -46,8 +46,15 @@ class _LoginScreenState extends State<LoginScreen> {
             _injectInterceptor();
           },
         ),
-      )
-      ..loadRequest(Uri.parse(widget.initialUrl));
+      );
+    
+    // Clear all WebView data
+    _controller.clearCache();
+    _controller.clearLocalStorage();
+    WebViewCookieManager().clearCookies();
+    
+    _controller.loadRequest(Uri.parse(widget.initialUrl));
+
   }
 
   void _injectInterceptor() {

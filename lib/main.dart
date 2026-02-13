@@ -4,7 +4,10 @@ import 'screens/group_selection_screen.dart';
 import 'screens/scanner_screen.dart';
 import 'services/api_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.clear();
   runApp(const LuckyScanApp());
 }
 
