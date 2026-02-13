@@ -3,8 +3,13 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 class LoginScreen extends StatefulWidget {
   final Function(String userId, String artistEvent) onLoginSuccess;
+  final String initialUrl;
 
-  const LoginScreen({super.key, required this.onLoginSuccess});
+  const LoginScreen({
+    super.key, 
+    required this.onLoginSuccess,
+    required this.initialUrl,
+  });
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -33,7 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
           },
         ),
       )
-      ..loadRequest(Uri.parse('https://ticket.fortunemeets.app/'));
+      ..loadRequest(Uri.parse(widget.initialUrl));
   }
 
   Future<void> _captureSession() async {

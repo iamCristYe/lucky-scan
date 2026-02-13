@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'screens/login_screen.dart';
+import 'screens/group_selection_screen.dart';
 import 'screens/scanner_screen.dart';
 import 'services/api_service.dart';
 
@@ -114,7 +114,7 @@ class _MainWrapperState extends State<MainWrapper> {
     }
 
     if (_userId == null || _artistEvent == null) {
-      return LoginScreen(onLoginSuccess: _saveSession);
+      return GroupSelectionScreen(onLoginSuccess: _saveSession);
     }
 
     return Scaffold(
