@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/group_selection_screen.dart';
 import 'screens/scanner_screen.dart';
+import 'screens/disclaimer_screen.dart';
 import 'services/api_service.dart';
 
 void main() async {
@@ -22,7 +23,7 @@ class LuckyScanApp extends StatelessWidget {
         primarySwatch: Colors.purple,
         useMaterial3: true,
       ),
-      home: const MainWrapper(),
+      home: const DisclaimerScreen(),
     );
   }
 }
