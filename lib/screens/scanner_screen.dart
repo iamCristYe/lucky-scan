@@ -125,68 +125,66 @@ class _ScannerScreenState extends State<ScannerScreen> {
   @override
   Widget build(BuildContext context) {
     if (!_isCameraInitialized) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Scan Codes')),
-      body: Column(
-        children: [
-          Expanded(
-            flex: 2,
-            child: CameraPreview(_controller!),
+    return Column(
+      children: [
+        Expanded(
+          flex: 2,
+          child: CameraPreview(_controller!),
+        ),
+        Expanded(
+          flex: 1,
+          child: ListView(
+            children: _scannedCodes.map((code) => ListTile(
+              title: Text(code),
+              trailing: IconButton(
+                icon: const Icon(Icons.delete),
+                onPressed: () {
+                  setState(() {
+                    _scannedCodes.remove(code);
+                  });
+                },
+              ),
+            )).toList(),
           ),
-          Expanded(
-            flex: 1,
-            child: ListView(
-              children: _scannedCodes.map((code) => ListTile(
-                title: Text(code),
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete),
-                  onPressed: () {
-                    setState(() {
-                      _scannedCodes.remove(code);
-                    });
-                  },
-                ),
-              )).toList(),
-            ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ElevatedButton(
+                onPressed: () async {
+                  // Manual capture trigger
+                  try {
+                      final image = await _controller!.takePicture();
+                      final inputImage = InputImage.fromFilePath(image.path);
+                      await _scanImage(inputImage);
+                  } catch (e) {
+                      print("Error taking picture: $e");
+                  }
+                },
+                child: const Text('Scan/Capture'),
+              ),
+              ElevatedButton(
+                onPressed: _pickImageFromGallery,
+                child: const Text('Gallery'),
+              ),
+               ElevatedButton(
+                onPressed: _scannedCodes.isEmpty ? null : () {
+                  widget.onScanComplete(_scannedCodes.toList());
+                  setState(() {
+                    _scannedCodes.clear();
+                  });
+                },
+                child: const Text('Register Batch'),
+              ),
+            ],
           ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: () async {
-                    // Manual capture trigger
-                    try {
-                        final image = await _controller!.takePicture();
-                        final inputImage = InputImage.fromFilePath(image.path);
-                        await _scanImage(inputImage);
-                    } catch (e) {
-                        print("Error taking picture: $e");
-                    }
-                  },
-                  child: const Text('Scan/Capture'),
-                ),
-                ElevatedButton(
-                  onPressed: _pickImageFromGallery,
-                  child: const Text('Gallery'),
-                ),
-                 ElevatedButton(
-                  onPressed: _scannedCodes.isEmpty ? null : () {
-                    widget.onScanComplete(_scannedCodes.toList());
-                  },
-                  child: const Text('Register Batch'),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

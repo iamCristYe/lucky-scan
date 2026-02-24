@@ -3,12 +3,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/group_selection_screen.dart';
 import 'screens/scanner_screen.dart';
 import 'screens/disclaimer_screen.dart';
+import 'screens/history_screen.dart';
 import 'services/api_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
-  await prefs.clear();
+  // await prefs.clear(); // Persistence enabled
   runApp(const LuckyScanApp());
 }
 
@@ -74,6 +75,16 @@ class _MainWrapperState extends State<MainWrapper> {
     });
   }
 
+  Future<void> _addToHistory(List<String> serials) async {
+    if (_userId == null || _artistEvent == null) return;
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'history_${_userId}_${_artistEvent}';
+    
+    List<String> history = prefs.getStringList(key) ?? [];
+    history.addAll(serials);
+    await prefs.setStringList(key, history);
+  }
+
   void _handleScanComplete(List<String> serials) async {
     if (_userId == null || _artistEvent == null) return;
 
@@ -88,6 +99,7 @@ class _MainWrapperState extends State<MainWrapper> {
 
     try {
       await api.registerSerialsBatch(serials);
+      await _addToHistory(serials);
       if (mounted) {
         Navigator.pop(context); // Close loading
         ScaffoldMessenger.of(context).showSnackBar(
@@ -125,6 +137,20 @@ class _MainWrapperState extends State<MainWrapper> {
       appBar: AppBar(
         title: Text(_artistEvent ?? 'Lucky Scan'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.history),
+            onPressed: () {
+               Navigator.push(
+                 context,
+                 MaterialPageRoute(
+                   builder: (context) => HistoryScreen(
+                     userId: _userId!,
+                     artistEvent: _artistEvent!,
+                   ),
+                 ),
+               );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: _logout,
