@@ -19,6 +19,8 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   late final WebViewController _controller;
   bool _isLoading = true;
+  String? _capturedEventId;
+  String? _capturedArtistName;
 
   @override
   void initState() {
@@ -73,7 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
         var oldSend = XMLHttpRequest.prototype.send;
         XMLHttpRequest.prototype.send = function(body) {
             this.addEventListener('load', function() {
-                if (this._url && this._url.includes('external-api.fortunemeets.app/api/login/')) {
+                if (this._url && (this._url.includes('external-api.fortunemeets.app/api/login/') || this._url.includes('config.json'))) {
                      try {
                          LoginChannel.postMessage(this.responseText);
                      } catch(e) {}
@@ -86,7 +88,7 @@ class _LoginScreenState extends State<LoginScreen> {
         var oldFetch = window.fetch;
         window.fetch = function(input, init) {
             return oldFetch.apply(this, arguments).then(function(response) {
-                if (input && input.toString().includes('external-api.fortunemeets.app/api/login/')) {
+                if (input && (input.toString().includes('external-api.fortunemeets.app/api/login/') || input.toString().includes('config.json'))) {
                     response.clone().text().then(function(text) {
                          try {
                              LoginChannel.postMessage(text);
@@ -104,15 +106,26 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _handleLoginResponse(String responseBody) async {
     try {
       final Map<String, dynamic> json = jsonDecode(responseBody);
+
+      // Check for config.json response
+      if (json.containsKey('eventId') && json.containsKey('artistName')) {
+        _capturedEventId = json['eventId'];
+        _capturedArtistName = json['artistName'];
+        debugPrint("Captured config: $_capturedEventId - $_capturedArtistName");
+        return;
+      }
+
       // The user specified that "key" is the one used as x-user-id
       final String? key = json['key'];
       
       if (key != null && key.isNotEmpty) {
-        // Derive x-artist-event from current URL
+        // Derive x-artist-event from current URL or use captured one
         final String? currentUrl = await _controller.currentUrl();
         String artistEvent = "";
         
-        if (currentUrl != null) {
+        if (_capturedEventId != null && _capturedEventId!.isNotEmpty) {
+          artistEvent = _capturedEventId!;
+        } else if (currentUrl != null) {
           final uri = Uri.parse(currentUrl);
           if (uri.pathSegments.isNotEmpty) {
              artistEvent = uri.pathSegments.last;
@@ -131,12 +144,10 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _showConfirmationDialog(String userId, String initialArtistEvent) {
+  void _showConfirmationDialog(String userId, String artistEvent) {
     // Avoid showing multiple dialogs
     if (!mounted) return;
 
-    final TextEditingController eventController = TextEditingController(text: initialArtistEvent);
-    
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -150,13 +161,13 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 10),
             Text("User ID (key): $userId", style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
-            TextField(
-              controller: eventController,
-              decoration: const InputDecoration(
-                labelText: "Artist Event (x-artist-event)",
-                helperText: "Verify this matches the event (e.g. nogizaka46_39th)",
-              ),
-            ),
+            Text("Artist Event: $artistEvent", style: const TextStyle(fontWeight: FontWeight.bold)),
+            if (_capturedArtistName != null) ...[
+              const SizedBox(height: 5),
+              Text("Artist Name: $_capturedArtistName"),
+            ],
+            const SizedBox(height: 10),
+            const Text("This session will be used to register serial codes."),
           ],
         ),
         actions: [
@@ -164,9 +175,9 @@ class _LoginScreenState extends State<LoginScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              widget.onLoginSuccess(userId, eventController.text);
+              widget.onLoginSuccess(userId, artistEvent);
             },
-            child: const Text("Save & Continue"),
+            child: const Text("Confirm & Proceed"),
           ),
         ],
       ),
