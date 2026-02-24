@@ -1,6 +1,7 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class ScannerScreen extends StatefulWidget {
@@ -18,6 +19,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
   final TextRecognizer _textRecognizer = TextRecognizer();
   bool _isScanning = false;
   final Set<String> _scannedCodes = {};
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -101,6 +103,18 @@ class _ScannerScreenState extends State<ScannerScreen> {
     }
   }
 
+  Future<void> _pickImageFromGallery() async {
+    try {
+      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+      if (image != null) {
+        final inputImage = InputImage.fromFilePath(image.path);
+        await _scanImage(inputImage);
+      }
+    } catch (e) {
+      print("Error picking image: $e");
+    }
+  }
+
   @override
   void dispose() {
     _controller?.dispose();
@@ -157,6 +171,10 @@ class _ScannerScreenState extends State<ScannerScreen> {
                     }
                   },
                   child: const Text('Scan/Capture'),
+                ),
+                ElevatedButton(
+                  onPressed: _pickImageFromGallery,
+                  child: const Text('Gallery'),
                 ),
                  ElevatedButton(
                   onPressed: _scannedCodes.isEmpty ? null : () {
