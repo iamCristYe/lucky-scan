@@ -66,5 +66,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs camera access to scan barcode serial codes.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs photo library access to scan barcode serial codes from gallery.</string>
 </dict>
 </plist>
